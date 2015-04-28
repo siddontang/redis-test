@@ -34,8 +34,7 @@ RET_LEN 1
 RET "1"
 
 MGET a b
-RET ["1", nil]
-`
+RET ["1", nil]`
 
 	s := &Scanner{}
 	s.Init([]byte(str))

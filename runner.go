@@ -30,12 +30,16 @@ func (r *ScriptRunner) execCommand(c redis.Conn, s *Scanner) error {
 	for {
 		line = s.line
 		items = s.ScanCommand()
-		if s.Err() != nil {
-			return s.Err()
+		err := s.Err()
+
+		if err != nil && err != io.EOF {
+			return err
 		}
 
 		if len(items) > 0 {
 			break
+		} else if err == io.EOF {
+			return io.EOF
 		}
 	}
 
