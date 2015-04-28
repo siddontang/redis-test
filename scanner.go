@@ -130,9 +130,10 @@ func (s *Scanner) scanMantissa(base int) {
 	}
 }
 
-// RESP only supports integer, float is bulk string
-func (s *Scanner) scanNumber() int64 {
+func (s *Scanner) scanNumber() interface{} {
 	offs := s.offset
+
+	isInteger := true
 
 	if s.ch == '0' {
 		// int or float
@@ -145,7 +146,7 @@ func (s *Scanner) scanNumber() int64 {
 			if s.offset-offs <= 2 {
 				// only scanned "0x" or "0X"
 				s.error(offs, "illegal hexadecimal number")
-				return 0
+				return nil
 			}
 		} else {
 			// octal int or float
@@ -157,12 +158,11 @@ func (s *Scanner) scanNumber() int64 {
 				s.scanMantissa(10)
 			}
 			if s.ch == '.' || s.ch == 'e' || s.ch == 'E' || s.ch == 'i' {
-				s.error(offs, "illegal number, must integer")
-				return 0
+				goto fraction
 			} else if seenDecimalDigit {
 				// octal int
 				s.error(offs, "illegal octal number")
-				return 0
+				return nil
 			}
 		}
 		goto exit
@@ -170,17 +170,42 @@ func (s *Scanner) scanNumber() int64 {
 
 	s.scanMantissa(10)
 
+fraction:
 	if s.ch == '.' {
-		s.error(offs, "illegal number, must integer")
-		return 0
+		isInteger = false
+		s.next()
+		s.scanMantissa(10)
+	}
+
+	if s.ch == 'e' || s.ch == 'E' {
+		isInteger = false
+		s.next()
+		if s.ch == '-' || s.ch == '+' {
+			s.next()
+		}
+		s.scanMantissa(10)
+	}
+
+	if s.ch == 'i' {
+		s.error(offs, fmt.Sprintf("illegal number, can not support image number"))
+		return nil
 	}
 
 exit:
-	n, err := strconv.ParseInt(string(s.src[offs:s.offset]), 10, 64)
+	var v interface{}
+	var err error
+	if isInteger {
+		v, err = strconv.ParseInt(string(s.src[offs:s.offset]), 10, 64)
+	} else {
+		v, err = strconv.ParseFloat(string(s.src[offs:s.offset]), 64)
+	}
+
 	if err != nil {
 		s.error(offs, fmt.Sprintf("illegal number, parse err: %v", err))
+		return nil
 	}
-	return n
+
+	return v
 }
 
 // scanEscape parses an escape sequence where rune is the accepted

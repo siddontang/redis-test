@@ -36,4 +36,4 @@ RET ["2", nil]
 # If return type is simple string or bulk, length is the string/bulk size.
 # If return type is nil, length is 0.
 # If return type is integer, error.
-RET_LEN 2 
+RET_LEN 2

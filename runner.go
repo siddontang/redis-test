@@ -134,6 +134,10 @@ func formatExpected(expected interface{}) string {
 		return fmt.Sprintf("%d", n)
 	}
 
+	if f, ok := expected.(float64); ok {
+		return fmt.Sprintf("%v", f)
+	}
+
 	return fmt.Sprintf("%v", expected)
 }
 
