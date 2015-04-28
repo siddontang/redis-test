@@ -358,6 +358,10 @@ func (s *Scanner) scanCommand() {
 			}
 		}
 
+		if s.err != nil {
+			break
+		}
+
 		if v != nil {
 			if s.inBracket() {
 				n := len(s.arrayItems) - 1
