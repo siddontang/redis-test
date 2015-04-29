@@ -334,6 +334,20 @@ func (s *Scanner) scanCommand() {
 				}
 			case '"':
 				v = s.scanString()
+			case '-':
+				// we only care negative number
+				if '0' <= s.ch && s.ch <= '9' {
+					v = s.scanNumber()
+					switch n := v.(type) {
+					case int64:
+						v = -n
+					case float64:
+						v = -n
+					}
+				} else {
+					s.error(s.offset, "only support negative number now")
+					return
+				}
 			case '[':
 				s.arrayItems = append(s.arrayItems, make([]interface{}, 0))
 			case ']':

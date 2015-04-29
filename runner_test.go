@@ -45,6 +45,14 @@ RET "1.2"
 SET a 2
 INCR a
 RET 3
+
+SET a -1
+GET a
+RET "-1"
+
+SET a -1.2
+GET a
+RET "-1.2"
 `
 
 	s := &Scanner{}
